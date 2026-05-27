@@ -1,0 +1,2 @@
+as_of_date,effective_date,uc_proxy_close,composite_signal,position_target,signal_threshold,deadband_mode,in_market,computed_at_utc,z_dxy_momentum,z_copper_momentum,z_vix_change,z_rate_diff_level,z_gold_momentum,z_bitcoin_momentum
+2026-05-26,2026-05-27,6.79449987411499,0.3034615783183346,0.12932697289791822,0.2,soft,True,2026-05-27T13:40:07Z,0.46528924737820904,0.5760116230465502,-0.4351295037533986,0.9405746318596838,-0.7769793156368583,0.14987332076601845

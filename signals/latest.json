@@ -1,0 +1,17 @@
+{
+  "as_of_date": "2026-05-26",
+  "effective_date": "2026-05-27",
+  "uc_proxy_close": 6.79449987411499,
+  "composite_signal": 0.3034615783183346,
+  "position_target": 0.12932697289791822,
+  "signal_threshold": 0.2,
+  "deadband_mode": "soft",
+  "in_market": true,
+  "computed_at_utc": "2026-05-27T13:40:07Z",
+  "z_dxy_momentum": 0.46528924737820904,
+  "z_copper_momentum": 0.5760116230465502,
+  "z_vix_change": -0.4351295037533986,
+  "z_rate_diff_level": 0.9405746318596838,
+  "z_gold_momentum": -0.7769793156368583,
+  "z_bitcoin_momentum": 0.14987332076601845
+}

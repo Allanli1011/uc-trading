@@ -1,0 +1,145 @@
+# UC (SGX USD/CNH futures) Daily Macro Factor Strategy
+# All dates ISO format. Set end_date to null to use today.
+
+data:
+  start_date: "2015-01-01"
+  end_date: null
+  cache_dir: "data/raw"
+  use_cache: true
+  cache_ttl_days: 1                # refetch if cache older than N days
+
+  # Yahoo Finance tickers (proxy data, no auth)
+  #
+  # NOTE on UC proxy: Yahoo Finance's offshore CNH ticker (CNH=X) does not
+  # serve historical data — only the onshore CNY=X ticker has a usable
+  # history.  CNY (in-shore, PBoC-managed) and CNH (offshore, free-float)
+  # differ by a typically tiny basis (<100 pips, occasionally wider in
+  # stressed regimes).  For a daily *directional* strategy this is an
+  # acceptable proxy.  To use real UC data, replace this ticker with a
+  # Tushare / SGX / Bloomberg fetcher in loaders.py.
+  tickers:
+    uc_proxy: "CNY=X"              # USD/CNY spot — onshore proxy for UC
+    dxy: "DX-Y.NYB"                # US Dollar Index
+    treasury_10y: "^TNX"           # 10Y UST yield (×10)
+    vix: "^VIX"
+    sp500: "^GSPC"
+    copper: "HG=F"                 # COMEX copper front-month
+    csi300: "000300.SS"            # 沪深300
+    gold: "GC=F"                   # COMEX gold front-month
+    bitcoin: "BTC-USD"             # Bitcoin/USD (trades 24/7, aligned to bdays)
+
+  # FRED series (no auth required for pandas-datareader)
+  fred:
+    sofr: "SOFR"                   # Secured Overnight Financing Rate
+    treasury_2y: "DGS2"            # 2-Year US Treasury constant-maturity yield
+
+  # AKShare (no auth)
+  akshare:
+    cgb_yield: true                # 中债国债收益率曲线
+    shibor: true                   # SHIBOR (proxy for offshore CNH funding)
+
+  # HKMA CNH HIBOR — see loaders.py.  Optional, falls back to SHIBOR if unavailable.
+  hkma:
+    cnh_hibor: false               # set true once endpoint verified
+
+factors:
+  # Each factor: name -> { enabled, weight, lookback, ... }
+  # Composite signal = sum(weight_i * zscore_i) / sum(|weight_i|)
+  # Position direction = sign(composite signal); magnitude scales position.
+  #
+  # Two original factors are disabled after attribution showed they were
+  # not earning their keep:
+  #   - cnh_mean_revert     Sharpe -0.31, MDD -31%  (CNY=X trends > reverts)
+  #   - rate_diff_momentum  Sharpe  0.43           (CGB data sparse, weak)
+  # They remain in the registry for ablation but turned off by default.
+
+  dxy_momentum:
+    enabled: true
+    weight: 1.0                    # DXY up   => USD strong => UC up
+    lookback: 20
+  copper_momentum:
+    enabled: true
+    weight: -0.5                   # copper up => CNH strong => UC down
+    lookback: 20
+  vix_change:
+    enabled: true
+    weight: 0.5                    # VIX up   => risk-off    => UC up
+    lookback: 5
+
+  # NEW — replacements for the disabled rate factor
+  rate_diff_level:
+    enabled: true
+    weight: 1.0                    # high (UST10Y - CGB10Y) => carry-favourable long UC
+  us_curve_slope:
+    enabled: false                 # disabled: Sharpe -0.44, MDD -26% as single factor
+    weight: 0.5
+    lookback: 20
+
+  # Risk-asset proxies — sign aligned to "asset up => USD weak => UC down"
+  gold_momentum:
+    enabled: true
+    weight: -0.5                   # gold up => USD weak => UC down
+    lookback: 20
+  bitcoin_momentum:
+    enabled: true                  # kept for MDD reduction (single-factor Sharpe weak but
+    weight: -0.5                   # diversifying — see ablation notes)
+    lookback: 20
+
+  # Ablation / archived (set enabled: true to re-include)
+  rate_diff_momentum:
+    enabled: false
+    weight: 1.0
+    lookback: 20
+  cnh_mean_revert:
+    enabled: false
+    weight: -0.5
+    lookback: 60
+
+  zscore_window: 252               # rolling window for factor standardization
+
+signal:
+  # Mode for the primary equity curve: "static" (config weights) or
+  # "walk_forward" (rolling Ridge regression on factors -> next-day return).
+  mode: "static"
+
+  # Signal deadband: go flat when conviction is weak.
+  #   threshold = 0      -> always positioned (legacy behaviour)
+  #   threshold = 0.2    -> require |signal| >= 0.2 of the [-1,1] range
+  # deadband_mode:
+  #   "hard"  -> position is exactly 0 below the threshold (discrete cut-off)
+  #   "soft"  -> position scaled to ((|sig|-th) / (1-th))*sign, continuous
+  #
+  # Defaults below were chosen from scripts/sweep_threshold.py:
+  #   - Static  best Sharpe at  soft / 0.20  (Sh 1.89, MDD -2.36%, InMkt 79%)
+  #   - WF      best Sharpe at  soft / 0.40  (Sh 1.36, MDD -2.68%, InMkt 62%)
+  # We use 0.20 as a unified default that helps both signals.
+  threshold: 0.20
+  deadband_mode: "soft"
+
+  walk_forward:
+    enabled: true                  # if true, also runs WF for comparison
+    window_days: 504               # ~24 months training window
+    refit_every: 21                # ~monthly refit
+    alpha: 1.0                     # Ridge L2 penalty
+    normalize_window: 252          # rescale prediction to z-score scale
+
+attribution:
+  enabled: true                    # run a single-factor backtest for each factor
+
+backtest:
+  start_date: "2017-01-01"         # leave 2 years for factor warmup
+  signal_lag_days: 1               # use yesterday's signal for today's position
+  cost_bps: 1.0                    # round-trip transaction cost
+  initial_capital: 1000000
+
+risk:
+  vol_target_annual: 0.10          # 10% annualized volatility target
+  vol_lookback: 60
+  max_gross_position: 1.0          # cap leverage
+  vix_filter_threshold: 30.0       # cut position by half when VIX > threshold
+  vix_filter_scale: 0.5
+
+output:
+  dir: "output"
+  save_plots: true
+  save_trades: true
