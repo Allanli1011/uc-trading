@@ -1,8 +1,12 @@
 # UC Trading — SGX USD/CNH 日频宏观因子策略
 
+[![Daily UC Signal](https://github.com/Allanli1011/uc-trading/actions/workflows/daily-signal.yml/badge.svg)](https://github.com/Allanli1011/uc-trading/actions/workflows/daily-signal.yml)
+
 基于宏观因子模型的 SGX UC（美元/离岸人民币）期货日频交易策略。
 使用免费数据源（Yahoo Finance + FRED + AKShare），模块化架构，
 支持 **static 加权 + walk-forward Ridge + 单因子归因** 三种回测视角。
+
+**🟢 实盘信号每天自动更新**：见 [`signals/REPORT.md`](signals/REPORT.md) 和 [`signals/latest.json`](signals/latest.json)。
 
 ## 当前回测结果（2017-01 ~ 2026-05，6 因子 + 0.20 soft deadband）
 
