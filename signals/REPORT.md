@@ -1,6 +1,6 @@
 # UC Paper-Trading Live Track
 
-_Last update_: `2026-05-27 13:58 UTC`
+_Last update_: `2026-05-27 23:25 UTC`
 
 > First signal recorded; the underlying close for its **effective**
 > day hasn't arrived yet, so there is no realised PnL to display.
@@ -9,8 +9,8 @@ _Last update_: `2026-05-27 13:58 UTC`
 
 - **As-of close**: `2026-05-26` (close = `6.7945`)
 - **Effective trading day**: `2026-05-27`
-- **Composite signal**: `+0.3035`
-- **Target position**: `+0.1293`  (LONG)
+- **Composite signal**: `+0.3071`
+- **Target position**: `+0.1339`  (LONG)
 - **In market**: `True`
 
 ## Track-record chart
