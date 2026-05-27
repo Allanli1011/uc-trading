@@ -78,15 +78,47 @@ def build_paper_pnl(history: pd.DataFrame, uc_close: pd.Series, cost_bps: float)
 
 def render_report(history: pd.DataFrame, pnl: pd.DataFrame, metrics: dict, cfg) -> str:
     """Render a short Markdown summary of the live paper track."""
-    if pnl.empty:
-        return "# UC Paper Trading\n\nNo PnL yet — first signal not yet aged a trading day.\n"
-
-    latest = history.sort_values("as_of_date").iloc[-1]
+    latest = history.sort_values("as_of_date").iloc[-1] if not history.empty else None
     factor_cfg = cfg["factors"]
     active_factors = sorted(
         n for n, p in factor_cfg.items()
         if isinstance(p, dict) and p.get("enabled", True)
     )
+
+    # Empty-PnL case: still emit a useful report so the chart shows up.
+    if pnl.empty:
+        lines = [
+            "# UC Paper-Trading Live Track",
+            "",
+            f"_Last update_: `{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}`",
+            "",
+            "> First signal recorded; the underlying close for its **effective**",
+            "> day hasn't arrived yet, so there is no realised PnL to display.",
+            "",
+        ]
+        if latest is not None:
+            lines.extend([
+                "## Latest signal",
+                "",
+                f"- **As-of close**: `{pd.Timestamp(latest['as_of_date']).date()}` (close = `{latest['uc_proxy_close']:.4f}`)",
+                f"- **Effective trading day**: `{pd.Timestamp(latest['effective_date']).date()}`",
+                f"- **Composite signal**: `{latest['composite_signal']:+.4f}`",
+                f"- **Target position**: `{latest['position_target']:+.4f}`  "
+                f"({'LONG' if latest['position_target'] > 0 else 'SHORT' if latest['position_target'] < 0 else 'FLAT'})",
+                f"- **In market**: `{bool(latest.get('in_market', False))}`",
+                "",
+            ])
+        lines.extend([
+            "## Track-record chart",
+            "",
+            "![Live track](track.png)",
+            "",
+            "## Active factor set",
+            "",
+            ", ".join(f"`{f}`" for f in active_factors),
+            "",
+        ])
+        return "\n".join(lines)
 
     cum_ret = pnl["equity"].iloc[-1] - 1.0
     best_day = pnl["net_pnl"].max() if not pnl["net_pnl"].dropna().empty else 0.0
