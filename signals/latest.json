@@ -7,7 +7,7 @@
   "signal_threshold": 0.2,
   "deadband_mode": "soft",
   "in_market": true,
-  "computed_at_utc": "2026-05-27T13:45:36Z",
+  "computed_at_utc": "2026-05-27T13:56:12Z",
   "z_dxy_momentum": 0.46528924737820954,
   "z_copper_momentum": 0.5760116230465522,
   "z_vix_change": -0.43512950375339765,
