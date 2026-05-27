@@ -2,11 +2,19 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
+import matplotlib
+
+# Use a non-interactive backend so the module works in CI / headless runners.
+# Honour an explicit MPLBACKEND if the caller has set one.
+if not os.environ.get("MPLBACKEND"):
+    matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -201,3 +209,143 @@ def plot_walk_forward_weights(
     ax.legend(loc="upper left", fontsize=8, ncol=2)
     fig.tight_layout()
     _save_or_show(fig, out_dir, "walk_forward_weights")
+
+
+# ---------------------------------------------------------------------------
+# Paper-trading track-record chart (used by scripts/update_paper_pnl.py)
+# ---------------------------------------------------------------------------
+def _placeholder_chart(out_path: Path, message: str) -> None:
+    fig, ax = plt.subplots(figsize=(11, 4.5))
+    ax.text(0.5, 0.5, message, ha="center", va="center",
+            fontsize=14, transform=ax.transAxes, color="#555555")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    fig.tight_layout()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, bbox_inches="tight", dpi=140)
+    plt.close(fig)
+    logger.info("Saved placeholder chart to %s", out_path)
+
+
+def plot_paper_track(
+    pnl: pd.DataFrame,
+    signals: pd.DataFrame | None = None,
+    out_path: Path | None = None,
+    metrics: dict | None = None,
+) -> None:
+    """3-panel live track-record chart: equity / drawdown / position.
+
+    Parameters
+    ----------
+    pnl : DataFrame
+        Output of ``scripts.update_paper_pnl.build_paper_pnl``.  Indexed by
+        date, must contain columns ``equity``, ``net_pnl``,
+        ``position_realized``.
+    signals : DataFrame, optional
+        Signal history (one row per as-of date).  If given, vertical
+        markers are drawn at each signal-generation day on the position
+        panel.
+    out_path : Path
+        Full path to the output PNG (e.g. ``signals/track.png``).
+    metrics : dict, optional
+        Pre-computed metrics dict; if given, key stats are stamped on the
+        chart as an annotation.
+    """
+    if out_path is None:
+        raise ValueError("out_path is required")
+    out_path = Path(out_path)
+
+    # Handle empty / too-short cases gracefully so the workflow can still
+    # commit a (small) chart on day 1.
+    if pnl is None or pnl.empty:
+        _placeholder_chart(
+            out_path,
+            "Live track starts after the first signal's effective day.\n"
+            "Come back tomorrow.",
+        )
+        return
+    valid = pnl["net_pnl"].dropna()
+    if len(valid) < 1:
+        _placeholder_chart(
+            out_path,
+            "First signal recorded — waiting for the underlying close\n"
+            "to realise day-1 PnL.",
+        )
+        return
+
+    fig, axes = plt.subplots(
+        3, 1, sharex=True, figsize=(11, 8.5),
+        gridspec_kw={"height_ratios": [2.6, 1.0, 1.4]},
+    )
+
+    # --- Equity --------------------------------------------------------
+    ax_eq = axes[0]
+    equity = pnl["equity"]
+    ax_eq.plot(equity.index, equity.values, color="#1f77b4", linewidth=1.6)
+    ax_eq.scatter(equity.index, equity.values, s=18, color="#1f77b4", zorder=3,
+                  edgecolor="white", linewidth=0.6)
+    ax_eq.axhline(1.0, color="k", linewidth=0.6, linestyle="--", alpha=0.4)
+    ax_eq.set_ylabel("Equity (×NAV)")
+    ax_eq.set_title(f"UC paper-trading track — {len(pnl)} day(s) since "
+                    f"{pnl.index[0].date()}")
+
+    # Annotate latest equity
+    last_eq = equity.iloc[-1]
+    ax_eq.annotate(
+        f"{last_eq:.4f}\n({(last_eq - 1) * 100:+.2f}%)",
+        xy=(equity.index[-1], last_eq),
+        xytext=(8, 8), textcoords="offset points",
+        fontsize=9, color="#1f77b4",
+        bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="#1f77b4", alpha=0.85),
+    )
+
+    # Stamp metrics in upper-left
+    if metrics:
+        stamp = (
+            f"Days: {len(pnl)}\n"
+            f"AnnRet: {metrics.get('ann_return', float('nan')):+.2%}\n"
+            f"AnnVol: {metrics.get('ann_vol', float('nan')):.2%}\n"
+            f"Sharpe: {metrics.get('sharpe', float('nan')):.2f}\n"
+            f"MaxDD:  {metrics.get('max_drawdown', float('nan')):+.2%}"
+        )
+        ax_eq.text(
+            0.01, 0.98, stamp, transform=ax_eq.transAxes,
+            fontsize=8, va="top", family="monospace",
+            bbox=dict(boxstyle="round,pad=0.4", fc="#f0f0f0", ec="#888", alpha=0.9),
+        )
+
+    # --- Drawdown ------------------------------------------------------
+    ax_dd = axes[1]
+    peak = equity.cummax()
+    dd = equity / peak - 1.0
+    ax_dd.fill_between(dd.index, dd.values, 0, color="#d62728", alpha=0.45)
+    ax_dd.plot(dd.index, dd.values, color="#d62728", linewidth=0.8)
+    ax_dd.set_ylabel("Drawdown")
+    ax_dd.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x:.1%}"))
+
+    # --- Position ------------------------------------------------------
+    ax_pos = axes[2]
+    pos = pnl["position_realized"]
+    ax_pos.fill_between(pos.index, pos.values, 0, where=(pos > 0),
+                        color="#2ca02c", alpha=0.55, label="Long")
+    ax_pos.fill_between(pos.index, pos.values, 0, where=(pos < 0),
+                        color="#d62728", alpha=0.55, label="Short")
+    ax_pos.axhline(0, color="k", linewidth=0.6)
+    ax_pos.set_ylabel("Position")
+    ax_pos.set_ylim(-1.05, 1.05)
+    ax_pos.legend(loc="upper right", fontsize=8)
+
+    # Vertical markers at signal-generation days
+    if signals is not None and len(signals) > 0:
+        sig_dates = pd.to_datetime(signals["as_of_date"])
+        for d in sig_dates:
+            ax_pos.axvline(d, color="#888888", linewidth=0.5,
+                           linestyle="--", alpha=0.5, zorder=0)
+
+    fig.tight_layout()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, bbox_inches="tight", dpi=140)
+    plt.close(fig)
+    logger.info("Saved paper-track chart to %s", out_path)

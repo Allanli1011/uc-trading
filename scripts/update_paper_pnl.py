@@ -29,6 +29,7 @@ import pandas as pd  # noqa: E402
 from src.backtest.metrics import compute_metrics  # noqa: E402
 from src.config import load_config  # noqa: E402
 from src.data import align_and_clean, load_all  # noqa: E402
+from src.viz import plot_paper_track  # noqa: E402
 
 
 def setup_logging() -> None:
@@ -128,12 +129,17 @@ def render_report(history: pd.DataFrame, pnl: pd.DataFrame, metrics: dict, cfg) 
         "",
         ", ".join(f"`{f}`" for f in active_factors),
         "",
+        "## Track-record chart",
+        "",
+        "![Live track](track.png)",
+        "",
         "## Files",
         "",
         "- `signals/history.csv` — append-only signal log",
         "- `signals/latest.json` — latest signal in pretty form",
         "- `signals/paper_pnl.csv` — realised daily PnL series",
         "- `signals/stats.json` — machine-readable performance metrics",
+        "- `signals/track.png` — live equity / drawdown / position chart",
         "",
         "---",
         "",
@@ -195,6 +201,11 @@ def main() -> int:
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(report)
     log.info("Wrote %s", report_path)
+
+    # Visual track-record chart (also writes a placeholder if pnl is empty)
+    track_path = sig_dir / "track.png"
+    plot_paper_track(pnl, signals=history, out_path=track_path, metrics=metrics)
+    log.info("Wrote %s", track_path)
 
     if not pnl.empty:
         log.info(
