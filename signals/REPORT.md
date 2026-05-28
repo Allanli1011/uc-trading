@@ -1,22 +1,48 @@
 # UC Paper-Trading Live Track
 
-_Last update_: `2026-05-27 23:25 UTC`
-
-> First signal recorded; the underlying close for its **effective**
-> day hasn't arrived yet, so there is no realised PnL to display.
+_Last update_: `2026-05-28 23:26 UTC`
 
 ## Latest signal
 
-- **As-of close**: `2026-05-26` (close = `6.7945`)
-- **Effective trading day**: `2026-05-27`
-- **Composite signal**: `+0.3071`
-- **Target position**: `+0.1339`  (LONG)
+- **As-of close**: `2026-05-27 00:00:00` (close = `6.7860`)
+- **Effective trading day**: `2026-05-28 00:00:00`
+- **Composite signal**: `+0.3306`
+- **Target position**: `+0.1633`  (LONG)
 - **In market**: `True`
+- **Deadband**: threshold=`0.2`, mode=`soft`
+
+## Live performance
+
+- **Signals recorded**: 2
+- **Trading days observed**: 1 (since 2026-05-27)
+- **Cumulative return**: `-0.02%`
+- **Annualised return**: `-4.46%`
+- **Annualised volatility**: `nan%`
+- **Sharpe ratio**: `nan`
+- **Sortino ratio**: `nan`
+- **Max drawdown**: `+0.00%`
+- **Calmar**: `nan`
+- **Win rate (non-flat days)**: `0.0%`
+- **Best day**: `-0.0181%`
+- **Worst day**: `-0.0181%`
+- **In-market fraction**: `100.0%`
+
+## Active factor set
+
+`bitcoin_momentum`, `copper_momentum`, `dxy_momentum`, `gold_momentum`, `rate_diff_level`, `vix_change`
 
 ## Track-record chart
 
 ![Live track](track.png)
 
-## Active factor set
+## Files
 
-`bitcoin_momentum`, `copper_momentum`, `dxy_momentum`, `gold_momentum`, `rate_diff_level`, `vix_change`
+- `signals/history.csv` — append-only signal log
+- `signals/latest.json` — latest signal in pretty form
+- `signals/paper_pnl.csv` — realised daily PnL series
+- `signals/stats.json` — machine-readable performance metrics
+- `signals/track.png` — live equity / drawdown / position chart
+
+---
+
+_Paper-trading only. Uses `CNY=X` (in-shore) as a proxy for SGX UC futures; real-life UC PnL will differ by the CNY/CNH basis._
