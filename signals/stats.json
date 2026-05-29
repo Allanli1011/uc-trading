@@ -1,12 +1,12 @@
 {
-  "ann_return": -0.044575572355611714,
-  "ann_vol": NaN,
-  "sharpe": NaN,
-  "sortino": NaN,
-  "max_drawdown": 0.0,
-  "calmar": NaN,
-  "win_rate": 0.0,
-  "avg_annual_turnover": 33.74877254307275,
-  "trading_days": 1,
-  "final_equity": 0.9998190655357855
+  "ann_return": -0.028177763430488945,
+  "ann_vol": 0.0017913328791648788,
+  "sharpe": -15.954424324009949,
+  "sortino": -533.2212066101883,
+  "max_drawdown": -0.0001761595590566989,
+  "calmar": -159.9559148613651,
+  "win_rate": 0.3333333333333333,
+  "avg_annual_turnover": 13.714667425107624,
+  "trading_days": 3,
+  "final_equity": 0.9996597915098134
 }
