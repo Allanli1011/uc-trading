@@ -1,13 +1,13 @@
 # UC Paper-Trading Live Track
 
-_Last update_: `2026-06-12 23:27 UTC`
+_Last update_: `2026-06-15 23:55 UTC`
 
 ## Latest signal
 
 - **As-of close**: `2026-06-12 00:00:00` (close = `6.7755`)
 - **Effective trading day**: `2026-06-15 00:00:00`
-- **Composite signal**: `+0.9930`
-- **Target position**: `+0.9912`  (LONG)
+- **Composite signal**: `+0.5293`
+- **Target position**: `+0.4116`  (LONG)
 - **In market**: `True`
 - **Deadband**: threshold=`0.2`, mode=`soft`
 
