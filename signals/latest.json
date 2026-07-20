@@ -2,16 +2,16 @@
   "as_of_date": "2026-07-17",
   "effective_date": "2026-07-20",
   "uc_proxy_close": 6.772500038146973,
-  "composite_signal": 1.4587906103689114,
-  "position_target": 1.0,
+  "composite_signal": 0.9375416266739013,
+  "position_target": 0.9219270333423765,
   "signal_threshold": 0.2,
   "deadband_mode": "soft",
   "in_market": true,
-  "computed_at_utc": "2026-07-17T22:58:13Z",
+  "computed_at_utc": "2026-07-20T23:08:58Z",
   "z_dxy_momentum": null,
   "z_copper_momentum": null,
-  "z_vix_change": null,
-  "z_rate_diff_level": 1.4587906103689114,
+  "z_vix_change": 1.3833206483640648,
+  "z_rate_diff_level": 1.4144709835239626,
   "z_gold_momentum": null,
-  "z_bitcoin_momentum": null
+  "z_bitcoin_momentum": 0.4620961087163845
 }
