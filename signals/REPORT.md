@@ -1,31 +1,31 @@
 # UC Paper-Trading Live Track
 
-_Last update_: `2026-09-16 00:08 UTC`
+_Last update_: `2026-09-17 00:19 UTC`
 
 ## Latest signal
 
-- **As-of close**: `2026-09-15 00:00:00` (close = `6.7082`)
-- **Effective trading day**: `2026-09-16 00:00:00`
-- **Composite signal**: `+0.8278`
-- **Target position**: `+0.7848`  (LONG)
+- **As-of close**: `2026-09-16 00:00:00` (close = `6.7112`)
+- **Effective trading day**: `2026-09-17 00:00:00`
+- **Composite signal**: `+1.1699`
+- **Target position**: `+1.0000`  (LONG)
 - **In market**: `True`
 - **Deadband**: threshold=`0.2`, mode=`soft`
 
 ## Live performance
 
-- **Signals recorded**: 64
-- **Trading days observed**: 80 (since 2026-05-27)
-- **Cumulative return**: `-0.33%`
-- **Annualised return**: `-1.02%`
+- **Signals recorded**: 65
+- **Trading days observed**: 81 (since 2026-05-27)
+- **Cumulative return**: `-0.29%`
+- **Annualised return**: `-0.91%`
 - **Annualised volatility**: `0.86%`
-- **Sharpe ratio**: `-1.19`
-- **Sortino ratio**: `-1.66`
+- **Sharpe ratio**: `-1.06`
+- **Sortino ratio**: `-1.46`
 - **Max drawdown**: `-0.78%`
-- **Calmar**: `-1.32`
-- **Win rate (non-flat days)**: `31.8%`
+- **Calmar**: `-1.17`
+- **Win rate (non-flat days)**: `32.8%`
 - **Best day**: `+0.2284%`
 - **Worst day**: `-0.1510%`
-- **In-market fraction**: `82.5%`
+- **In-market fraction**: `82.7%`
 
 ## Active factor set
 
